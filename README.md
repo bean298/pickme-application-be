@@ -1,71 +1,110 @@
-# PickMe Application
+# 🍽 PickMe – Backend 
 
-Ứng dụng đặt trước và đến lấy với 3 roles: Admin, Customer, Restaurant Owner.
+Backend API for **PickMe – Pre-order, Pick Up, Go!**
 
-## Yêu cầu hệ thống
+A food pre-ordering system that allows users to order in advance and pick up directly at the restaurant.
 
-- Java 17+
-- PostgreSQL 12+ (với PostGIS extension)
-- Maven 3.6+
+Built with **Spring Boot**, **PostgreSQL** + **PostGIS**, and **RESTful APIs**, supporting authentication, ordering, location-based features, and system management.
 
-## Cài đặt và chạy
+This system supports:
+- User authentication and role-based access control (Admin, Customer, Restaurant Owner)
+- Restaurant and menu management
+- Food pre-ordering with pickup time selection
+- Order management and processing
+- Location-based services (PostGIS integration)
+- Route-based restaurant recommendations
+- Customer address management
+- Feedback and rating system
+- System administration and user management
 
-### Tùy chọn 1: Sử dụng Neon Database (Cloud PostgreSQL)
+---
 
-**Bước 1**: Tạo database trên Neon
+## 🚀 Tech Stack
 
-1. Đăng ký tài khoản tại [Neon.tech](https://neon.tech)
-2. Tạo project mới
-3. Lấy connection string từ dashboard
+- Java 17
+- Spring Boot 3
+- Spring Security + JWT
+- PostgreSQL 12+
+- PostGIS (Geolocation)
+- JPA (Hibernate)
+- REST API
+- Swagger UI
+- Java Mail Sender
+- Maven
 
-**Bước 2**: Cấu hình Environment Variables cho Neon
-Copy và cập nhật file `.env`:
+---
+
+## 🧩 Main Features
+
+### 👤 Customer
+- Register & login
+- View restaurants and menus
+- Pre-order food and select pickup time
+- View directions to restaurants
+- Get restaurant recommendations along the route
+- Place and pay for orders
+- Manage delivery/pickup addresses (PostGIS)
+- Submit feedback after purchase
+
+### 🧑‍🍳 Restaurant Owner
+- Manage restaurant profile
+- Manage restaurant location and menu
+- Receive and process pre-orders
+- Track customer orders
+
+### 🧑‍💼 Admin
+- Manage all users
+- Manage restaurants, campaigns, and promotions
+- Monitor system activities
+- Activate / deactivate users and manage roles
+
+---
+
+## 🗄 Database
+
+- PostgreSQL + PostGIS  
+- Database name: `pickmeapplication`
+
+Supports:
+- Geolocation storage (latitude / longitude)
+- Nearby search
+- Route-based restaurant recommendations
+
+---
+
+## ⚙️ Installation & Run
+
+### 1. Clone the repository
 
 ```bash
-copy .env.example .env
+git clone <backend-repo-url>
 ```
 
-Cập nhật các biến môi trường Neon:
+### 2. Database Setup
 
-```properties
-NEON_DATABASE_URL=jdbc:postgresql://ep-your-endpoint.us-east-1.aws.neon.tech/neondb?sslmode=require
+2.1: Neon PostgreSQL (Cloud)
+- Register at ``` https://neon.tech ```
+- Create a new project
+- Copy the connection string from the dashboard
+
+Update Neon configuration:
+```bash
+NEON_DATABASE_URL=jdbc:postgresql://ep-your-endpoint.neon.tech/neondb?sslmode=require
 NEON_DB_USERNAME=your-username
 NEON_DB_PASSWORD=your-password
 ```
+### 3.Environment Variables
 
-**Bước 3**: Chạy ứng dụng
-
-```bash
-mvn spring-boot:run
-```
-
-Hibernate sẽ tự động tạo các bảng cần thiết với `ddl-auto=update`.
-
-### Tùy chọn 2: Sử dụng PostgreSQL Local
-
-**Bước 1**: Tạo database local
-
-Chạy script SQL để tạo database:
-
-```sql
-psql -U postgres -f postgres_setup.sql
-psql -U postgres -d pickmeapplication -f enable_postgis.sql
-```
-
-**Bước 2**: Cấu hình Environment Variables
-
-Ứng dụng sử dụng **spring.factories** để tự động load file `.env` khi khởi động.
-
-**Bước 1**: Copy file `.env.example` thành `.env`:
+Create a `.env` file at the root of the project:
 
 ```bash
 copy .env.example .env
 ```
 
-**Bước 2**: Cập nhật thông tin trong file `.env`:
+Update the environment variables:
 
-```properties
-# Database Configuration - PostgreSQL
+```bash
+# Database (Neon / Local PostgreSQL)
 DB_PASSWORD=your_database_password
 
 # JWT Configuration
@@ -77,285 +116,42 @@ MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-16-digit-app-password
 MAIL_FROM=your-email@gmail.com
 
-# Application Configuration
+# Application
 APP_BASE_URL=http://localhost:8080
 APP_ENV=development
 
-# Server Configuration
+# Server
+SERVER_ADDRESS=0.0.0.0
 SERVER_PORT=8080
 ```
 
-**⚠️ Quan trọng**: File `.env` chứa thông tin nhạy cảm và đã được thêm vào `.gitignore`. Không bao giờ commit file này lên Git!
-
-## Tính năng Environment Loading
-
-### Automatic .env Loading với spring.factories
-
-Ứng dụng sử dụng `spring.factories` để tự động load file `.env` khi khởi động:
-
-- **EnvironmentLoader**: Load file `.env` trước khi Spring Boot context khởi tạo
-- **EnvironmentValidator**: Validate các environment variables cần thiết
-- **EnvUtil**: Utility class để truy cập environment variables dễ dàng
-
-### Thứ tự tìm file .env
-
-1. `.env` (thư mục gốc project)
-2. `config/.env` (thư mục config)
-3. `{working-directory}/.env`
-4. `{user-home}/.env`
-5. Classpath resources
-
-### Validation tự động
-
-Application sẽ kiểm tra các environment variables bắt buộc:
-
-- `DB_PASSWORD`: Password database
-- `JWT_SECRET`: Phải ít nhất 32 ký tự
-- `MAIL_USERNAME`: Phải đúng format email
-- `MAIL_PASSWORD`: Password email
-
-Xem chi tiết tại: [`docs/ENVIRONMENT_SETUP.md`](docs/ENVIRONMENT_SETUP.md)
-
-### 3. Cấu hình Email (Gmail)
-
-Để sử dụng tính năng gửi email:
-
-1. **Tạo App Password cho Gmail**:
-
-   - Đăng nhập Gmail → Google Account Settings
-   - Security → 2-Step Verification (bật nếu chưa có)
-   - App passwords → Generate password for "Mail"
-   - Copy app password (16 ký tự)
-
-2. **Cập nhật file `.env`**:
-
-```properties
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-16-digit-app-password
-MAIL_FROM=your-email@gmail.com
-```
-
-3. **Test Email**: Sau khi cấu hình, test bằng cách đăng ký tài khoản mới hoặc reset password.
-
-### 4. Cấu hình Network Access
-
-Ứng dụng được cấu hình để lắng nghe trên tất cả IP addresses (`0.0.0.0`):
-
-```properties
-# Trong file .env
-SERVER_ADDRESS=0.0.0.0  # Lắng nghe trên tất cả IP
-SERVER_PORT=8080        # Port mặc định
-```
-
-**Các tùy chọn SERVER_ADDRESS:**
-
-- `0.0.0.0` - Lắng nghe trên tất cả IP (có thể truy cập từ mạng ngoài)
-- `localhost` hoặc `127.0.0.1` - Chỉ truy cập từ máy local
-- `192.168.x.x` - IP cụ thể trong mạng LAN
-
-### 5. Chạy ứng dụng
+### 4. Run backend
 
 ```bash
-mvn spring-boot:run
+mvn spring-boot:run 
 ```
 
-Ứng dụng sẽ chạy trên port 8080 và có thể truy cập từ:
-
-- **Local**: http://localhost:8080
-- **Network**: http://YOUR_IP_ADDRESS:8080
-
-## Swagger UI
-
-Sau khi chạy ứng dụng, bạn có thể truy cập Swagger UI để xem và test API:
-
-**Local Access:**
-
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **API Docs JSON**: http://localhost:8080/v3/api-docs
-
-**Network Access:** (từ máy khác trong cùng mạng)
-
-- **Swagger UI**: http://YOUR_IP_ADDRESS:8080/swagger-ui.html
-- **API Docs JSON**: http://YOUR_IP_ADDRESS:8080/v3/api-docs
-
-**Lấy IP address của máy:**
-
-- Windows: `ipconfig`
-- Linux/Mac: `ifconfig` hoặc `ip addr`
-
-Swagger UI cung cấp:
-
-- Danh sách tất cả API endpoints
-- Mô tả chi tiết cho từng API
-- Khả năng test API trực tiếp trong browser
-- Schema của request/response
-- Authentication với JWT token
-
-### Cách sử dụng JWT trong Swagger:
-
-1. Đăng nhập qua API `/api/auth/login` để lấy token
-2. Click nút "Authorize" ở góc trên bên phải Swagger UI
-3. Nhập token vào ô "Value" (không cần thêm "Bearer ")
-4. Click "Authorize" để áp dụng token cho tất cả API calls
-
-### Error Messages (Thông báo lỗi):
-
-Hệ thống cung cấp các thông báo lỗi chi tiết và thân thiện với người dùng:
-
-#### Các loại lỗi chính:
-
-- **400 - Bad Request**: Dữ liệu đầu vào không hợp lệ
-- **401 - Unauthorized**: Thông tin đăng nhập không hợp lệ
-- **403 - Forbidden**: Không có quyền truy cập
-- **404 - Not Found**: Không tìm thấy resource
-- **409 - Conflict**: Dữ liệu bị trung lập (email đã tồn tại)
-- **500 - Internal Server Error**: Lỗi hệ thống nội bộ
-
-#### Format Error Response:
-
-```json
-{
-  "message": "Thông báo lỗi chính",
-  "status": 409,
-  "timestamp": "2025-09-26T10:30:00",
-  "errors": {
-    "email": "user@example.com",
-    "suggestion": "Vui lòng sử dụng email khác hoặc đăng nhập nếu bạn đã có tài khoản"
-  }
-}
-```
-
-#### Demo Error APIs:
-
-Bạn có thể test các loại error messages qua các endpoints:
-
-- `GET /api/demo/error/email-exists` - Demo lỗi email đã tồn tại
-- `GET /api/demo/error/user-not-found` - Demo lỗi user không tìm thấy
-- `GET /api/demo/error/access-denied` - Demo lỗi không có quyền
-- `GET /api/demo/error/validation` - Demo lỗi validation
-- `GET /api/demo/error/internal` - Demo lỗi hệ thống
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/auth/register` - Đăng ký tài khoản mới
-- `POST /api/auth/login` - Đăng nhập
-
-### User Management
-
-- `GET /api/users/me` - Lấy thông tin user hiện tại
-- `GET /api/users` - Lấy danh sách tất cả users (Admin only)
-- `GET /api/users/{id}` - Lấy thông tin user theo ID
-- `PUT /api/users/{id}` - Cập nhật thông tin user
-- `DELETE /api/users/{id}` - Xóa user (Admin only)
-- `PUT /api/users/{id}/activate` - Kích hoạt user (Admin only)
-- `PUT /api/users/{id}/deactivate` - Vô hiệu hóa user (Admin only)
-
-### User Address Management
-
-- `GET /api/addresses` - Lấy tất cả địa chỉ của user
-- `GET /api/addresses/default` - Lấy địa chỉ mặc định
-- `GET /api/addresses/{addressId}` - Lấy địa chỉ theo ID
-- `POST /api/addresses` - Tạo địa chỉ mới
-- `PUT /api/addresses/{addressId}` - Cập nhật địa chỉ
-- `PUT /api/addresses/{addressId}/set-default` - Đặt làm địa chỉ mặc định
-- `DELETE /api/addresses/{addressId}` - Xóa địa chỉ
-- `GET /api/addresses/count` - Đếm số lượng địa chỉ
-- `GET /api/addresses/nearby` - Tìm địa chỉ gần vị trí (Admin only)
-
-## Roles
-
-### ADMIN
-
-- Quản lý tất cả users
-- Quản lý thông tin, chiến dịch, khuyến mãi
-
-### CUSTOMER
-
-- Xem thông tin quán ăn, món ăn
-- Xem đường dẫn đến quán ăn
-- Nhận gợi ý quán ăn trên tuyến đường
-- Order và thanh toán đơn hàng
-- Chọn giờ đến lấy món ăn
-
-### RESTAURANT_OWNER
-
-- Cung cấp địa chỉ, thông tin món ăn
-- Nhận đơn từ khách hàng
-
-## Ví dụ API
-
-### Đăng ký
+Server will start at:
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "password123",
-    "fullName": "Administrator",
-    "phoneNumber": "0123456789",
-    "role": "ADMIN"
-  }'
+http://localhost:8080
 ```
 
-### Đăng nhập
+---
+
+## 🧪 API Documentation
+
+Swagger UI:
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "password123"
-  }'
+http://localhost:8080/swagger-ui/index.html
 ```
 
-### Lấy thông tin user hiện tại
+<img width="1919" height="870" alt="Screenshot 2026-01-06 160756" src="https://github.com/user-attachments/assets/23a5950e-8c6b-4150-9777-eaf44d7f0fd3" />
 
-```bash
-curl -X GET http://localhost:8080/api/users/me \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
 
-## JWT Token
 
-Sau khi đăng nhập thành công, bạn sẽ nhận được JWT token. Token này cần được gửi trong header `Authorization` với format `Bearer YOUR_TOKEN` cho các API yêu cầu authentication.
 
-## Cấu trúc dự án
 
-```
-src/
-├── main/
-│   ├── java/
-│   │   └── org/
-│   │       └── example/
-│   │           ├── Main.java
-│   │           ├── config/
-│   │           │   ├── JwtAuthenticationFilter.java
-│   │           │   └── SecurityConfig.java
-│   │           ├── controller/
-│   │           │   ├── AuthController.java
-│   │           │   └── UserController.java
-│   │           ├── dto/
-│   │           │   ├── AuthResponse.java
-│   │           │   ├── LoginRequest.java
-│   │           │   ├── RegisterRequest.java
-│   │           │   ├── UpdateUserRequest.java
-│   │           │   └── UserResponse.java
-│   │           ├── entity/
-│   │           │   ├── Role.java
-│   │           │   └── User.java
-│   │           ├── exception/
-│   │           │   └── GlobalExceptionHandler.java
-│   │           ├── repository/
-│   │           │   └── UserRepository.java
-│   │           ├── service/
-│   │           │   ├── CustomUserDetailsService.java
-│   │           │   └── UserService.java
-│   │           └── util/
-│   │               └── JwtUtil.java
-│   └── resources/
-│       └── application.properties
-└── test/
-```
+
+
